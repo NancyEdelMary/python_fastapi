@@ -141,21 +141,3 @@ def logout(response: Response, Authorize: AuthJWT = Depends(), user_id: str = De
 
 
 @router.get('/verifyemail/{token}')
-def verify_me(token: str, db: Session = Depends(get_db)):
-    hashedCode = hashlib.sha256()
-    hashedCode.update(bytes.fromhex(token))
-    verification_code = hashedCode.hexdigest()
-    user_query = db.query(models.User).filter(
-        models.User.verification_code == verification_code)
-    db.commit()
-    user = user_query.first()
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail='Email can only be verified once')
-    user_query.update(
-        {'verified': True, 'verification_code': None}, synchronize_session=False)
-    db.commit()
-    return {
-        "status": "success",
-        "message": "Account verified successfully"
-    }
